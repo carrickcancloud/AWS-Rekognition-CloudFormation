@@ -96,12 +96,12 @@ Resources:
                   - s3:GetObject
                 Resource:
                   - !Sub "arn:aws:s3:::${S3ImageAnalyzerBucket}/*"
-                  #- !sub "arn:aws:lambda:${Region}:${AccountId}:function:${BetaLambdaFunctionName}"
-                  #- !sub "arn:aws:lambda:${Region}:${AccountId}:function:${ProdLambdaFunctionName}"
+                  - !Sub "arn:aws:lambda:${Region}:${AccountId}:function:${BetaLambdaFunctionName}"
+                  - !Sub "arn:aws:lambda:${Region}:${AccountId}:function:${ProdLambdaFunctionName}"
                   - !Sub "arn:aws:dynamodb:*:*:table/${BetaDynamoDBTableName}"
                   - !Sub "arn:aws:dynamodb:*:*:table/${ProdDynamoDBTableName}"
-                  - !sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${BetaLambdaFunctionName}"
-                  - !sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${ProdLambdaFunctionName}"
+                  - !Sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${BetaLambdaFunctionName}"
+                  - !Sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${ProdLambdaFunctionName}"
 
   # Lambda Function for Beta Processing
   AcmeLabsImageAnalyzerLambdaFunctionBeta:
