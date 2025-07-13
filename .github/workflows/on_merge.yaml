@@ -10,14 +10,33 @@ jobs:
   deploy_and_process:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v2
+
+      - name: Create S3 Bucket For Lambda Functions
+        run: |
+          # Create the S3 bucket for Lambda function code
+          aws s3 mb s3://${{ secrets.S3LAMBDABUCKET }} --region ${{ secrets.AWS_REGION }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Package Lambda Functions
         run: |
           # Create zip files for Lambda functions
           zip lambda/beta.zip lambda/beta.py
           zip lambda/prod.zip lambda/prod.py
+
+      - name: Upload Lambda Function Code to S3
+        run: |
+          # Upload the zip files to the S3 bucket
+          aws s3 cp lambda/beta.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/beta.zip
+          aws s3 cp lambda/prod.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/prod.zip
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Deploy CloudFormation Stack
         id: deploy_stack
@@ -32,17 +51,6 @@ jobs:
               BetaDynamoDBTableName=${{ secrets.BETADYNAMODBTABLENAME }} \
               ProdDynamoDBTableName=${{ secrets.PRODDYNAMODBTABLENAME }} \
             --capabilities CAPABILITY_NAMED_IAM
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Upload Lambda Function Code to S3
-        if: steps.deploy_stack.outcome == 'success'  # Only run this if the stack was deployed successfully
-        run: |
-          # Upload the zip files to the S3 bucket
-          aws s3 cp lambda/beta.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/beta.zip
-          aws s3 cp lambda/prod.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/prod.zip
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
