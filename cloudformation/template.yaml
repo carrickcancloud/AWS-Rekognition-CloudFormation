@@ -96,8 +96,8 @@ Resources:
                   - s3:GetObject
                 Resource:
                   - !Sub "arn:aws:s3:::${S3ImageAnalyzerBucket}/*"
-                  - !sub "arn:aws:lambda:${Region}:${AccountId}:function:${BetaLambdaFunctionName}"
-                  - !sub "arn:aws:lambda:${Region}:${AccountId}:function:${ProdLambdaFunctionName}"
+                  #- !sub "arn:aws:lambda:${Region}:${AccountId}:function:${BetaLambdaFunctionName}"
+                  #- !sub "arn:aws:lambda:${Region}:${AccountId}:function:${ProdLambdaFunctionName}"
                   - !Sub "arn:aws:dynamodb:*:*:table/${BetaDynamoDBTableName}"
                   - !Sub "arn:aws:dynamodb:*:*:table/${ProdDynamoDBTableName}"
                   - !sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${BetaLambdaFunctionName}"
