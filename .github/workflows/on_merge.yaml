@@ -46,6 +46,7 @@ jobs:
             --template-file cloudformation/template.yaml \
             --stack-name AcmeLabsImageAnalyzerStack \
             --parameter-overrides \
+              AccountId=${{ secrets.AWS_ACCOUNT_ID }} \
               S3LambdaBucket=${{ secrets.S3LAMBDABUCKET }} \
               S3ImageAnalyzerBucket=${{ secrets.S3IMAGEANALYZERBUCKET }} \
               BetaDynamoDBTableName=${{ secrets.BETADYNAMODBTABLENAME }} \
