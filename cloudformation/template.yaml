@@ -63,6 +63,7 @@ Resources:
   AcmeLabsImageAnalyzerLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: AcmeLabsImageAnalyzerLambdaExecutionRole
       AssumeRolePolicyDocument:
         Version: '2012-10-17'
         Statement:
