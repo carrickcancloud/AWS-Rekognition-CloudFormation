@@ -106,7 +106,7 @@ Resources:
                   - !Sub "arn:aws:dynamodb:*:*:table/${BetaDynamoDBTableName}"
                   - !Sub "arn:aws:dynamodb:*:*:table/${ProdDynamoDBTableName}"
                   - !Sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${BetaLambdaFunctionName}"
-                  - !Sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${ProdLambdaFunctionName}"
+                  - !Sub "arn:aws:logs:us-east-1:047719623795:log-group:/aws/lambda/*"
 
   # Lambda Function for Beta Processing
   AcmeLabsImageAnalyzerLambdaFunctionBeta:
@@ -120,6 +120,11 @@ Resources:
         S3Key: acmelabs-imageanalyzer/beta.zip
       Runtime: python3.13
       Timeout: 30
+      Environment:
+        DYNAMODB_TABLE_PROD: !Ref BetaDynamoDBTableName
+        AWS_REGION: !Ref Region
+        S3_IMAGE_ANALYZER_BUCKET: !Ref S3ImageAnalyzerBucket
+        LOG_LEVEL: "INFO"
 
   # Lambda Function for Prod Processing
   AcmeLabsImageAnalyzerLambdaFunctionProd:
@@ -133,6 +138,11 @@ Resources:
         S3Key: acmelabs-imageanalyzer/prod.zip
       Runtime: python3.13
       Timeout: 30
+      Environment:
+        DYNAMODB_TABLE_PROD: !Ref ProdDynamoDBTableName
+        AWS_REGION: !Ref Region
+        S3_IMAGE_ANALYZER_BUCKET: !Ref S3ImageAnalyzerBucket
+        LOG_LEVEL: "INFO"
 
   # S3 Bucket for storing images
   AcmeLabsImageAnalyzerS3Bucket:
