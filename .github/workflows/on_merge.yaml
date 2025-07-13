@@ -57,6 +57,13 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
+      - name: Debug AccountId
+        if: steps.deploy_stack.outcome == 'success'
+        run: |
+          echo "AWS Account Id: ${{ secrets.AWS_ACCOUNT_ID }}"
+          account_id="${{ secrets.AWS_ACCOUNT_ID }}"
+          echo -n "$account_id" | wc -c
+
       - name: Debug Lambda ARNs
         if: steps.deploy_stack.outcome == 'success'
         run: |
@@ -64,7 +71,7 @@ jobs:
           echo "Prod Lambda ARN: arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.PRODLAMBDAFUNCTIONNAME }}"
 
       - name: Update S3 Bucket Notification Configuration
-        if: steps.deploy_stack.outcome == 'success'  # Only run if the stack was deployed successfully
+        if: steps.deploy_stack.outcome == 'success'
         run: |
           # Update the S3 bucket notification configuration to trigger Lambda functions
           aws s3api put-bucket-notification-configuration \
