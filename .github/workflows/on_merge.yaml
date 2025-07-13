@@ -38,12 +38,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Debug AccountId
-        run: |
-          echo "AWS Account Id: ${{ secrets.AWS_ACCOUNT_ID }}"
-          account_id="${{ secrets.AWS_ACCOUNT_ID }}"
-          echo -n "$account_id" | wc -c
-
       - name: Deploy CloudFormation Stack
         id: deploy_stack
         run: |
@@ -62,12 +56,6 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-
-      - name: Debug Lambda ARNs
-        if: steps.deploy_stack.outcome == 'success'
-        run: |
-          echo "Beta Lambda ARN: arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.BETALAMBDAFUNCTIONNAME }}"
-          echo "Prod Lambda ARN: arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.PRODLAMBDAFUNCTIONNAME }}"
 
       - name: Update S3 Bucket Notification Configuration
         if: steps.deploy_stack.outcome == 'success'
