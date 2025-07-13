@@ -2,6 +2,16 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: AcmeLabs Image Analyzer with S3, Lambda, and DynamoDB
 
 Parameters:
+  AccountId:
+    Type: String
+    Default: '047719623795'
+    Description: The AWS Account ID where the resources will be created.
+
+  Region:
+    Type: String
+    Default: us-east-1
+    Description: The AWS Region where the resources will be created.
+
   S3LambdaBucket:
     Type: String
     Default: acmelabs-lambdas
@@ -82,13 +92,21 @@ Resources:
             Statement:
               - Effect: Allow
                 Action:
-                  - rekognition:DetectLabels
                   - dynamodb:PutItem
+                  - lambda:InvokeFunction
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - rekognition:DetectLabels
                   - s3:GetObject
                 Resource:
                   - !Sub "arn:aws:s3:::${S3ImageAnalyzerBucket}/*"
+                  - !sub "arn:aws:lambda:${Region}:${AccountId}:function:${BetaLambdaFunctionName}",
+                  - !sub "arn:aws:lambda:${Region}:${AccountId}:function:${ProdLambdaFunctionName}"
                   - !Sub "arn:aws:dynamodb:*:*:table/${BetaDynamoDBTableName}"
                   - !Sub "arn:aws:dynamodb:*:*:table/${ProdDynamoDBTableName}"
+                  - !sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${BetaLambdaFunctionName}"
+                  - !sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${ProdLambdaFunctionName}"
 
   # Lambda Function for Beta Processing
   AcmeLabsImageAnalyzerLambdaFunctionBeta:
