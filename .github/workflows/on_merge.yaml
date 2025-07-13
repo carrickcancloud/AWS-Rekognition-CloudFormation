@@ -4,7 +4,7 @@ on:
   pull_request:
     types: [closed]  # Trigger on pull requests that are closed
     branches:
-      - main # Trigger on merges targeting the main branch
+      - main  # Trigger on merges targeting the main branch
 
 jobs:
   deploy_and_process:
@@ -19,17 +19,8 @@ jobs:
           zip lambda/beta.zip lambda/beta.py
           zip lambda/prod.zip lambda/prod.py
 
-      - name: Upload Lambda Function Code to S3
-        run: |
-          # Upload the zip files to the S3 bucket
-          aws s3 cp lambda/beta.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/beta.zip
-          aws s3 cp lambda/prod.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/prod.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-
       - name: Deploy CloudFormation Stack
+        id: deploy_stack
         run: |
           # Deploy the CloudFormation stack
           aws cloudformation deploy \
@@ -46,7 +37,19 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
+      - name: Upload Lambda Function Code to S3
+        if: steps.deploy_stack.outcome == 'success'  # Only run this if the stack was deployed successfully
+        run: |
+          # Upload the zip files to the S3 bucket
+          aws s3 cp lambda/beta.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/beta.zip
+          aws s3 cp lambda/prod.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/prod.zip
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION: ${{ secrets.AWS_REGION }}
+
       - name: Upload Images to S3
+        if: steps.deploy_stack.outcome == 'success'  # Only run this if the stack was deployed successfully
         run: |
           # Upload images to the S3 bucket for processing
           aws s3 cp images/ s3://${{ secrets.S3IMAGEANALYZERBUCKET }}/rekognition-input/prod/ --recursive
