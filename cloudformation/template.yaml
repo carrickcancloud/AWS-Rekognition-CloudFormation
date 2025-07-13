@@ -4,7 +4,6 @@ Description: AcmeLabs Image Analyzer with S3, Lambda, and DynamoDB
 Parameters:
   AccountId:
     Type: String
-    Default: '047719623795'
     Description: The AWS Account ID where the resources will be created.
 
   Region:
