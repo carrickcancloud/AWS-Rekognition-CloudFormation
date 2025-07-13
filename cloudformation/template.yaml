@@ -97,7 +97,6 @@ Resources:
                   - logs:CreateLogGroup
                   - logs:CreateLogStream
                   - logs:PutLogEvents
-                  - rekognition:DetectLabels
                   - s3:GetObject
                 Resource:
                   - !Sub "arn:aws:s3:::${S3ImageAnalyzerBucket}/*"
@@ -107,6 +106,21 @@ Resources:
                   - !Sub "arn:aws:dynamodb:*:*:table/${ProdDynamoDBTableName}"
                   - !Sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${BetaLambdaFunctionName}"
                   - !Sub "arn:aws:logs:us-east-1:047719623795:log-group:/aws/lambda/*"
+
+  # IAM Policy for Rekognition DetectLabels
+  RekognitionDetectLabelsPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: RekognitionDetectLabelsPolicy
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              - rekognition:DetectLabels
+            Resource: '*'
+      Roles:
+        - AcmeLabsImageAnalyzerLambdaExecutionRole
 
   # Lambda Function for Beta Processing
   AcmeLabsImageAnalyzerLambdaFunctionBeta:
@@ -120,6 +134,9 @@ Resources:
         S3Key: acmelabs-imageanalyzer/beta.zip
       Runtime: python3.13
       Timeout: 30
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: !Ref BetaDynamoDBTableName
 
   # Lambda Function for Prod Processing
   AcmeLabsImageAnalyzerLambdaFunctionProd:
@@ -133,6 +150,9 @@ Resources:
         S3Key: acmelabs-imageanalyzer/prod.zip
       Runtime: python3.13
       Timeout: 30
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: !Ref ProdDynamoDBTableName
 
   # S3 Bucket for storing images
   AcmeLabsImageAnalyzerS3Bucket:
