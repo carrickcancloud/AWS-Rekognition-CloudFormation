@@ -22,6 +22,16 @@ Parameters:
     Default: AcmeLabs-ImageAnalyzer-Prod-Results
     Description: The name of the DynamoDB table for Prod results.
 
+  BetaLambdaFunctionName:
+    Type: String
+    Default: AcmeLabs-ImageAnalyzer-Beta
+    Description: The name of the Lambda function for Beta processing.
+
+  ProdLambdaFunctionName:
+    Type: String
+    Default: AcmeLabs-ImageAnalyzer-Prod
+    Description: The name of the Lambda function for Beta processing.
+
 Resources:
   # DynamoDB Table for Beta Results
   AcmeLabsImageAnalyzerBetaResultsTable:
@@ -90,7 +100,7 @@ Resources:
   AcmeLabsImageAnalyzerLambdaFunctionBeta:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: AcmeLabsImageAnalyzerBeta
+      FunctionName: !Ref BetaLambdaFunctionName
       Handler: beta.lambda_handler
       Role: !GetAtt AcmeLabsImageAnalyzerLambdaExecutionRole.Arn
       Code:
@@ -103,7 +113,7 @@ Resources:
   AcmeLabsImageAnalyzerLambdaFunctionProd:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: AcmeLabsImageAnalyzerProd
+      FunctionName: !Ref ProdLambdaFunctionName
       Handler: prod.lambda_handler
       Role: !GetAtt AcmeLabsImageAnalyzerLambdaExecutionRole.Arn
       Code:
