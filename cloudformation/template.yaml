@@ -63,12 +63,6 @@ Resources:
         ReadCapacityUnits: 1
         WriteCapacityUnits: 1
 
-  # S3 Bucket for storing images
-  AcmeLabsImageAnalyzerS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Ref S3ImageAnalyzerBucket
-
   # IAM Role for Lambda Functions
   AcmeLabsImageAnalyzerLambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -121,6 +115,29 @@ Resources:
         S3Key: acmelabs-imageanalyzer/prod.zip
       Runtime: python3.13
       Timeout: 30
+
+  # S3 Bucket for storing images
+  AcmeLabsImageAnalyzerS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3ImageAnalyzerBucket
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt AcmeLabsImageAnalyzerLambdaFunctionBeta.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: Prefix
+                    Value: rekognition-input/beta/
+          - Event: s3:ObjectCreated:*
+            Function: !GetAtt AcmeLabsImageAnalyzerLambdaFunctionProd.Arn
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: Prefix
+                    Value: rekognition-input/prod/
+
 
 Outputs:
   S3ImageAnalyzerBucketName:
