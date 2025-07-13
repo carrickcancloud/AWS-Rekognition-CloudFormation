@@ -120,11 +120,6 @@ Resources:
         S3Key: acmelabs-imageanalyzer/beta.zip
       Runtime: python3.13
       Timeout: 30
-      Environment:
-        DYNAMODB_TABLE_PROD: !Ref BetaDynamoDBTableName
-        AWS_REGION: !Ref Region
-        S3_IMAGE_ANALYZER_BUCKET: !Ref S3ImageAnalyzerBucket
-        LOG_LEVEL: "INFO"
 
   # Lambda Function for Prod Processing
   AcmeLabsImageAnalyzerLambdaFunctionProd:
@@ -138,11 +133,6 @@ Resources:
         S3Key: acmelabs-imageanalyzer/prod.zip
       Runtime: python3.13
       Timeout: 30
-      Environment:
-        DYNAMODB_TABLE_PROD: !Ref ProdDynamoDBTableName
-        AWS_REGION: !Ref Region
-        S3_IMAGE_ANALYZER_BUCKET: !Ref S3ImageAnalyzerBucket
-        LOG_LEVEL: "INFO"
 
   # S3 Bucket for storing images
   AcmeLabsImageAnalyzerS3Bucket:
