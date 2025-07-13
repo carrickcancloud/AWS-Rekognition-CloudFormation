@@ -16,8 +16,8 @@ jobs:
       - name: Package Lambda Functions
         run: |
           # Create zip files for Lambda functions
-          zip -r lambda/beta.zip lambda/beta/
-          zip -r lambda/prod.zip lambda/prod/
+          zip lambda/beta.zip lambda/beta.py
+          zip lambda/prod.zip lambda/prod.py
 
       - name: Upload Lambda Function Code to S3
         run: |
