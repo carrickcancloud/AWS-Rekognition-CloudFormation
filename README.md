@@ -29,7 +29,7 @@ Languages:
 1. [🌐 Setup AWS Credentials](#-setup-aws-credentials)
 2. [👤 Create IAM User](#-create-iam-user)
 3. [🔑 Create Access Keys](#-create-access-keys)
-4. [⚙️ Create IAM Policy for GitHub Actions CI/CD](#-create-iam-policy-for-github-actions-wofkflows)
+4. [⚙️ Create IAM Policy for GitHub Actions Workflows](#-create-iam-policy-for-github-actions-wofkflows)
 5. [🔐 Configure GitHub Secrets](#-configure-github-secrets)
 6. [🔧 Modify Configuration Files](#-modify-configuration-files)
 7. [📦 GitHub Repository Structure](#-github-repository-structure)
@@ -66,7 +66,7 @@ To set up AWS credentials follow these steps:
 7. Click "Done" to finish. 🎉
 
 
-## ⚙️ Create IAM Policy for GitHub Actions Wofkflows
+## ⚙️ Create IAM Policy for GitHub Actions Workflows
 1. Create the `acmelabs_image_analyzer_github_actions_cicd_policy` Policy:
 - In the IAM console, go to "Policies" and click "Create policy".
 - Switch to the "JSON" tab and paste the following policy:
