@@ -29,7 +29,7 @@ Languages:
 1. [🌐 Setup AWS Credentials](#-setup-aws-credentials)
 2. [👤 Create IAM User](#-create-iam-user)
 3. [🔑 Create Access Keys](#-create-access-keys)
-4. [⚙️ Create IAM Policy for GitHub Actions Workflows](#-create-iam-policy-for-github-actions-wofkflows)
+4. [⚙️ Create IAM Policy for GitHub Actions Workflows](#-create-iam-policy-for-github-actions-workflows)
 5. [🔐 Configure GitHub Secrets](#-configure-github-secrets)
 6. [🔧 Modify Configuration Files](#-modify-configuration-files)
 7. [📦 GitHub Repository Structure](#-github-repository-structure)
