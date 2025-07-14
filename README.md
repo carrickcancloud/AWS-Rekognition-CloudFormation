@@ -40,7 +40,7 @@ To set up AWS credentials follow these steps:
 
 1. **AWS Account**: Ensure you have an AWS account. If not, create one at [AWS](https://aws.amazon.com/).
    
-## 👤 Create IAM User with Programmatic Access
+## 👤 Create IAM User
 - Create an IAM user in the AWS Management Console with programmatic access.
 - Example IAM username: `acmelabs_image_analyzer_github_actions_cicd_user`
 
@@ -50,9 +50,21 @@ To set up AWS credentials follow these steps:
 4. Enter a username for the new user and click on "Next" to proceed to the **Set permissions** section.
 5. Click on "Next" to proceed to the "Review and create" section.
 6. Click "Create user" to proceed.
-7. Make sure to jot down the Access Key ID and Secret Access Key securely. 🔒
 
-## 🔑 Create IAM Policy for GitHub Actions CI/CD
+## 🔑 Create Access Keys
+1. Navigate to the "Security credentials" tab of your user new IAM user. 
+2. Click on "Create access key" tab. 
+3. Click on "Other" for the "Use case". 
+4. Click on "Next" and fill out the "Description tag value" (name the secret). 
+5. Click on "Create access key". 
+6. Make sure to copy the Access Key ID and Secret Access Key. 
+   - You will need these for your GitHub Actions Workflows.
+   - Store these credentials securely, as you will not be able to view the Secret Access Key again. 🔒
+   - You can also download the credentials as a CSV file for safekeeping.
+7. Click "Done" to finish. 🎉
+
+
+## ⚙️ Create IAM Policy for GitHub Actions CI/CD
 1. Create the `acmelabs_image_analyzer_github_actions_cicd_policy` Policy:
 - In the IAM console, go to "Policies" and click "Create policy".
 - Switch to the "JSON" tab and paste the following policy:
