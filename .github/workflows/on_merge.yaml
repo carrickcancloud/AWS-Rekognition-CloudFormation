@@ -15,8 +15,10 @@ jobs:
 
       - name: Create S3 Bucket For Lambda Functions
         run: |
-          # Create the S3 bucket for Lambda function code
-          aws s3 mb s3://${{ secrets.S3LAMBDABUCKET }} --region ${{ secrets.AWS_REGION }}
+          echo "Starting S3 bucket creation..."
+          create_output=$(aws s3 mb s3://${{ secrets.S3LAMBDABUCKET }} --region ${{ secrets.AWS_REGION }})
+          echo "S3 bucket creation output: $create_output"
+          echo "S3 bucket created successfully."
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -24,16 +26,20 @@ jobs:
 
       - name: Package Lambda Functions
         run: |
-          # Create zip files for Lambda functions
+          echo "Packaging Lambda functions..."
           cd lambda
           zip beta.zip beta.py
           zip prod.zip prod.py
+          echo "Lambda functions packaged successfully."
 
       - name: Upload Lambda Function Code to S3
         run: |
-          # Upload the zip files to the S3 bucket
-          aws s3 cp lambda/beta.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/beta.zip
-          aws s3 cp lambda/prod.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/prod.zip
+          echo "Uploading Lambda function code to S3..."
+          upload_beta_output=$(aws s3 cp lambda/beta.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/beta.zip)
+          echo "Upload Beta output: $upload_beta_output"
+          upload_prod_output=$(aws s3 cp lambda/prod.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/prod.zip)
+          echo "Upload Prod output: $upload_prod_output"
+          echo "Lambda function code uploaded successfully."
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -42,8 +48,8 @@ jobs:
       - name: Deploy CloudFormation Stack
         id: deploy_stack
         run: |
-          # Deploy the CloudFormation stack
-          aws cloudformation deploy \
+          echo "Starting CloudFormation stack deployment..."
+          deploy_output=$(aws cloudformation deploy \
             --template-file cloudformation/template.yaml \
             --stack-name AcmeLabsImageAnalyzerStack \
             --parameter-overrides \
@@ -52,7 +58,9 @@ jobs:
               S3ImageAnalyzerBucket=${{ secrets.S3IMAGEANALYZERBUCKET }} \
               BetaDynamoDBTableName=${{ secrets.BETADYNAMODBTABLENAME }} \
               ProdDynamoDBTableName=${{ secrets.PRODDYNAMODBTABLENAME }} \
-            --capabilities CAPABILITY_NAMED_IAM
+            --capabilities CAPABILITY_NAMED_IAM)
+          echo "CloudFormation deployment output: $deploy_output"
+          echo "CloudFormation stack deployed successfully."
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -61,8 +69,8 @@ jobs:
       - name: Update S3 Bucket Notification Configuration
         if: steps.deploy_stack.outcome == 'success'
         run: |
-          # Update the S3 bucket notification configuration to trigger Lambda functions
-          aws s3api put-bucket-notification-configuration \
+          echo "Updating S3 bucket notification configuration to trigger Lambda functions..."
+          notification_output=$(aws s3api put-bucket-notification-configuration \
             --bucket ${{ secrets.S3IMAGEANALYZERBUCKET }} \
             --notification-configuration '{
               "LambdaFunctionConfigurations": [
@@ -95,7 +103,9 @@ jobs:
                   }
                 }
               ]
-            }'
+            }')
+          echo "S3 bucket notification configuration output: $notification_output"
+          echo "S3 bucket notification configuration updated successfully."
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -105,8 +115,15 @@ jobs:
       - name: Upload Images to S3
         if: steps.deploy_stack.outcome == 'success'
         run: |
-          # Upload images to the S3 bucket for processing
-          aws s3 cp images/ s3://${{ secrets.S3IMAGEANALYZERBUCKET }}/rekognition-input/prod/ --recursive
+          echo "Checking for images to upload..."
+          if [ -d images ] && [ "$(find images -type f \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.gif' -o -name '*.bmp' -o -name '*.tiff' -o -name '*.tif' -o -name '*.webp' \))" ]; then
+            echo "Uploading images to the S3 bucket for processing..."
+            upload_images_output=$(aws s3 cp images/ s3://${{ secrets.S3IMAGEANALYZERBUCKET }}/rekognition-input/prod/ --recursive)
+            echo "Image upload output: $upload_images_output"
+            echo "Images uploaded successfully."
+          else
+            echo "No supported images found in the directory. Skipping upload."
+          fi
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
