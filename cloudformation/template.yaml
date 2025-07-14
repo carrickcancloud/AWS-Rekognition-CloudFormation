@@ -2,7 +2,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Description: AcmeLabs Image Analyzer with S3, Lambda, and DynamoDB
 
 Parameters:
-
   AccountId:
     Type: String
     Description: The AWS Account ID where the resources will be created.
