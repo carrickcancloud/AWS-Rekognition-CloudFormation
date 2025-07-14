@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, timezone
 from botocore.exceptions import ClientError, BotoCoreError
 from typing import Dict, Any, List
+from decimal import Decimal
 
 # Configure logging
 logger = logging.getLogger()
@@ -27,46 +28,56 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # Initialize AWS clients
     rekognition = boto3.client('rekognition')
     dynamodb = boto3.resource('dynamodb')
-    table = dynamodb.Table(os.environ['DYNAMODB_TABLE_PROD'])
+    table_name = os.environ.get('DYNAMODB_TABLE_PROD', 'UnknownTable')
+    logger.info(f"Using DynamoDB table: {table_name}")
+    table = dynamodb.Table(table_name)
 
+    # Process each record in the event
     for record in event.get('Records', []):
-        bucket = record['s3']['bucket']['name']
-        key = record['s3']['object']['key']
+        logger.info("Processing record: %s", json.dumps(record))
 
         try:
-            # Detect labels in the image using AWS Rekognition
+            bucket = record['s3']['bucket']['name']  # Extract bucket name
+            key = record['s3']['object']['key']       # Extract object key
+            logger.info(f"Extracted bucket: {bucket}, key: {key}")
+
+            # Attempt to detect labels in the image using AWS Rekognition
             response = rekognition.detect_labels(
                 Image={'S3Object': {'Bucket': bucket, 'Name': key}}
             )
-            logger.info(f"Labels detected for {key} in bucket {bucket}: {response.get('Labels', [])}")
-        except (ClientError, BotoCoreError) as e:
-            logger.error(f"Error detecting labels for {key} in bucket {bucket}: {str(e)}")
-            return {
-                'statusCode': 500,
-                'body': json.dumps(f"Error processing {key}: {str(e)}")
+            logger.info(f"Rekognition response for {key}: {json.dumps(response)}")
+
+            # Extract labels and their confidence scores
+            labels: List[Dict[str, Any]] = [{'Name': label['Name'], 'Confidence': Decimal(label['Confidence'])} for label in response.get('Labels', [])]
+
+            logger.info(f"Detected labels for {key}: {labels}")
+
+            # Prepare the item to be stored in DynamoDB
+            item = {
+                'filename': key,
+                'labels': labels,
+                'timestamp': datetime.now(timezone.utc).isoformat(),
+                'branch': 'prod'
             }
+            logger.info(f"Prepared DynamoDB item: {item}")
 
-        # Extract labels and their confidence scores
-        labels: List[Dict[str, Any]] = [{'Name': label['Name'], 'Confidence': label['Confidence']} for label in
-                                         response.get('Labels', [])]
-
-        # Prepare the item to be stored in DynamoDB
-        item = {
-            'filename': key,
-            'labels': labels,
-            'timestamp': datetime.now(timezone.utc).isoformat(),
-            'branch': 'prod'
-        }
-
-        try:
-            # Store the item in DynamoDB
+            # Attempt to store the item in DynamoDB
             table.put_item(Item=item)
-            logger.info(f"Item stored successfully: {item}")
-        except ClientError as e:
-            logger.error(f"Error storing item {item} in DynamoDB: {str(e)}")
+            logger.info(f"Successfully stored item in DynamoDB for {key}")
+
+        except (ClientError, BotoCoreError) as e:
+            error_message = f"Error processing {key} in bucket {bucket}: {str(e)}"
+            logger.error(error_message)
             return {
                 'statusCode': 500,
-                'body': json.dumps(f"Error storing item {key}: {str(e)}")
+                'body': json.dumps(error_message)
+            }
+        except Exception as e:
+            error_message = f"Unexpected error processing {key}: {str(e)}"
+            logger.error(error_message)
+            return {
+                'statusCode': 500,
+                'body': json.dumps(error_message)
             }
 
     logger.info("Processing completed successfully.")

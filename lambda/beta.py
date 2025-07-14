@@ -5,6 +5,7 @@ import logging
 from datetime import datetime, timezone
 from botocore.exceptions import ClientError, BotoCoreError
 from typing import Dict, Any, List
+from decimal import Decimal
 
 # Configure logging
 logger = logging.getLogger()
@@ -31,12 +32,13 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     logger.info(f"Using DynamoDB table: {table_name}")
     table = dynamodb.Table(table_name)
 
+    # Process each record in the event
     for record in event.get('Records', []):
         logger.info("Processing record: %s", json.dumps(record))
 
         try:
-            bucket = record['s3']['bucket']['name']
-            key = record['s3']['object']['key']
+            bucket = record['s3']['bucket']['name']  # Extract bucket name
+            key = record['s3']['object']['key']       # Extract object key
             logger.info(f"Extracted bucket: {bucket}, key: {key}")
 
             # Attempt to detect labels in the image using AWS Rekognition
@@ -46,8 +48,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             logger.info(f"Rekognition response for {key}: {json.dumps(response)}")
 
             # Extract labels and their confidence scores
-            labels: List[Dict[str, Any]] = [{'Name': label['Name'], 'Confidence': label['Confidence']} for label in
-                                            response.get('Labels', [])]
+            labels: List[Dict[str, Any]] = [{'Name': label['Name'], 'Confidence': Decimal(label['Confidence'])} for label in response.get('Labels', [])]
+
             logger.info(f"Detected labels for {key}: {labels}")
 
             # Prepare the item to be stored in DynamoDB
@@ -64,16 +66,18 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             logger.info(f"Successfully stored item in DynamoDB for {key}")
 
         except (ClientError, BotoCoreError) as e:
-            logger.error(f"Error processing {key} in bucket {bucket}: {str(e)}")
+            error_message = f"Error processing {key} in bucket {bucket}: {str(e)}"
+            logger.error(error_message)
             return {
                 'statusCode': 500,
-                'body': json.dumps(f"Error processing {key}: {str(e)}")
+                'body': json.dumps(error_message)
             }
         except Exception as e:
-            logger.error(f"Unexpected error processing {key}: {str(e)}")
+            error_message = f"Unexpected error processing {key}: {str(e)}"
+            logger.error(error_message)
             return {
                 'statusCode': 500,
-                'body': json.dumps(f"Unexpected error processing {key}: {str(e)}")
+                'body': json.dumps(error_message)
             }
 
     logger.info("Processing completed successfully.")
