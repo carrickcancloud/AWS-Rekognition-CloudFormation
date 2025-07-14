@@ -1,4 +1,4 @@
-name: Deploy Infrastructure & Process Images on Merge
+name: Deploy Resources & Process Images on Merge
 
 on:
   pull_request:
