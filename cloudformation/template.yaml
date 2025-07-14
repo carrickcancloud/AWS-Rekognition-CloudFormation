@@ -184,22 +184,6 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Ref S3ImageAnalyzerBucket
-      NotificationConfiguration:
-        LambdaFunctionConfigurations:
-          - Event: s3:ObjectCreated:*
-            Function: !GetAtt AcmeLabsImageAnalyzerLambdaFunctionBeta.Arn
-            Filter:
-              Key:
-                FilterRules:
-                  - Name: prefix
-                    Value: rekognition-input/beta/
-          - Event: s3:ObjectCreated:*
-            Function: !GetAtt AcmeLabsImageAnalyzerLambdaFunctionProd.Arn
-            Filter:
-              Key:
-                FilterRules:
-                  - Name: prefix
-                    Value: rekognition-input/prod/
 
 Outputs:
   S3ImageAnalyzerBucketName:
