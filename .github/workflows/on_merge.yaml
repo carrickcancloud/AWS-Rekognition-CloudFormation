@@ -83,6 +83,38 @@ jobs:
                         {
                           "Name": "prefix",
                           "Value": "rekognition-input/beta/"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "jpg"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "jpeg"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "png"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "gif"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "bmp"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "tiff"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "tif"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "webp"
                         }
                       ]
                     }
@@ -97,6 +129,38 @@ jobs:
                         {
                           "Name": "prefix",
                           "Value": "rekognition-input/prod/"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "jpg"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "jpeg"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "png"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "gif"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "bmp"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "tiff"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "tif"
+                        },
+                        {
+                          "Name": "suffix",
+                          "Value": "webp"
                         }
                       ]
                     }
