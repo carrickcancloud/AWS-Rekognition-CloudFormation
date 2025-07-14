@@ -23,12 +23,21 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         Dict[str, Any]: Response object containing status code and message.
     """
     logger.info("Lambda function has started.")
+    logger.info(f"Function: {context.function_name}, Request ID: {context.aws_request_id}")
     logger.info(f"Received event: {json.dumps(event)}")
 
     # Initialize AWS clients
     rekognition = boto3.client('rekognition')
     dynamodb = boto3.resource('dynamodb')
     table_name = os.environ.get('DYNAMODB_TABLE_NAME', 'CheckYourLambdaEnvVarNameAndValue')
+
+    if not table_name:
+        logger.error("DYNAMODB_TABLE_NAME environment variable is not set.")
+        return {
+            'statusCode': 500,
+            'body': json.dumps("Configuration error: DYNAMODB_TABLE_NAME is missing.")
+        }
+
     logger.info(f"Using DynamoDB table: {table_name}")
     table = dynamodb.Table(table_name)
 
@@ -38,7 +47,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
 
         try:
             bucket = record['s3']['bucket']['name']  # Extract bucket name
-            key = record['s3']['object']['key']       # Extract object key
+            key = record['s3']['object']['key']  # Extract object key
             logger.info(f"Extracted bucket: {bucket}, key: {key}")
 
             # Attempt to detect labels in the image using AWS Rekognition
@@ -48,7 +57,8 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             logger.info(f"Rekognition response for {key}: {json.dumps(response)}")
 
             # Extract labels and their confidence scores
-            labels: List[Dict[str, Any]] = [{'Name': label['Name'], 'Confidence': Decimal(label['Confidence'])} for label in response.get('Labels', [])]
+            labels: List[Dict[str, Any]] = [{'Name': label['Name'], 'Confidence': Decimal(label['Confidence'])} for
+                                            label in response.get('Labels', [])]
 
             logger.info(f"Detected labels for {key}: {labels}")
 
@@ -66,18 +76,17 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             logger.info(f"Successfully stored item in DynamoDB for {key}")
 
         except (ClientError, BotoCoreError) as e:
-            error_message = f"Error processing {key} in bucket {bucket}: {str(e)}"
-            logger.error(error_message)
+            logger.exception(
+                f"Error processing {key} in bucket {bucket}: {str(e)}")  # Log the exception with stack trace
             return {
                 'statusCode': 500,
-                'body': json.dumps(error_message)
+                'body': json.dumps(f"Error processing {key}: {str(e)}")
             }
         except Exception as e:
-            error_message = f"Unexpected error processing {key}: {str(e)}"
-            logger.error(error_message)
+            logger.exception(f"Unexpected error processing {key}: {str(e)}")  # Log the exception with stack trace
             return {
                 'statusCode': 500,
-                'body': json.dumps(error_message)
+                'body': json.dumps(f"Unexpected error: {str(e)}")
             }
 
     logger.info("Processing completed successfully.")
