@@ -155,6 +155,30 @@ Resources:
         Variables:
           DYNAMODB_TABLE_NAME: !Ref ProdDynamoDBTableName
 
+  # Add permissions for S3 to invoke the Beta Lambda function
+  AcmeLabsImageAnalyzerLambdaPermissionBeta:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref AcmeLabsImageAnalyzerLambdaFunctionBeta
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub "arn:aws:s3:::${S3ImageAnalyzerBucket}"
+    DependsOn:
+      - AcmeLabsImageAnalyzerLambdaFunctionBeta
+
+  # Add permissions for S3 to invoke the Prod Lambda function
+  AcmeLabsImageAnalyzerLambdaPermissionProd:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref AcmeLabsImageAnalyzerLambdaFunctionProd
+      Principal: s3.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+      SourceArn: !Sub "arn:aws:s3:::${S3ImageAnalyzerBucket}"
+    DependsOn:
+      - AcmeLabsImageAnalyzerLambdaFunctionProd
+
   # S3 Bucket for storing images
   AcmeLabsImageAnalyzerS3Bucket:
     Type: AWS::S3::Bucket
