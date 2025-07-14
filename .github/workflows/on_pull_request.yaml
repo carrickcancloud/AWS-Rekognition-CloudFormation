@@ -1,22 +1,23 @@
-name: Upload Images on Pull Request
+name: Upload Images on Pull Request  # Name of the workflow
 
 on:
-  pull_request:
+  pull_request:  # Trigger the workflow on pull requests
     branches:
-      - main
+      - main  # Only trigger for pull requests targeting the 'main' branch
 
 jobs:
-  upload:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  upload:  # Define a job named 'upload'
+    runs-on: ubuntu-latest  # Specify the environment to run the job
 
-      - name: Upload Images to S3
+    steps:  # Define the steps to be executed in this job
+      - name: Checkout  # Step to checkout the repository code
+        uses: actions/checkout@v2  # Use the checkout action to pull the code
+
+      - name: Upload Images to S3  # Step to upload images to S3
         run: |
-          # Upload images to the S3 bucket for processing
+          # Upload images from the 'images/' directory to the specified S3 bucket
           aws s3 cp images/ s3://${{ secrets.S3IMAGEANALYZERBUCKET }}/rekognition-input/beta/ --recursive
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+        env:  # Define environment variables needed for the AWS CLI command
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS Access Key ID for authentication
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS Secret Access Key for authentication
+          AWS_REGION: ${{ secrets.AWS_REGION }}  # AWS Region where the S3 bucket is located

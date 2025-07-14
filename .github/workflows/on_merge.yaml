@@ -1,85 +1,87 @@
-name: Deploy Infrastructure and Process Images on Merge
+name: Deploy Infrastructure & Process Images on Merge  # Name of the workflow
 
 on:
-  pull_request:
-    types: [closed]  # Trigger on pull requests that are closed
+  pull_request:  # Trigger the workflow on pull requests
+    types: [closed]  # Only trigger when pull requests are closed
     branches:
-      - main  # Trigger on merges targeting the main branch
+      - main  # Only trigger for merges targeting the main branch
 
 jobs:
-  deploy_and_process:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
+  deploy_and_process:  # Define a job named 'deploy_and_process'
+    runs-on: ubuntu-latest  # Specify the environment to run the job
 
-      - name: Create S3 Bucket For Lambda Functions
+    steps:  # Define the steps to be executed in this job
+      - name: Checkout  # Step to checkout the repository code
+        uses: actions/checkout@v2  # Use the checkout action to pull the code
+
+      - name: Create S3 Bucket For Lambda Functions  # Step to create an S3 bucket
         run: |
           # Create the S3 bucket for Lambda function code
           aws s3 mb s3://${{ secrets.S3LAMBDABUCKET }} --region ${{ secrets.AWS_REGION }}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+        env:  # Define environment variables needed for the AWS CLI command
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS Access Key ID for authentication
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS Secret Access Key for authentication
+          AWS_REGION: ${{ secrets.AWS_REGION }}  # AWS Region where the S3 bucket will be created
 
-      - name: Package Lambda Functions
+      - name: Package Lambda Functions  # Step to package Lambda functions
         run: |
           # Create zip files for Lambda functions
-          cd lambda
-          zip beta.zip beta.py
-          zip prod.zip prod.py
+          cd lambda  # Change directory to 'lambda'
+          zip beta.zip beta.py  # Zip the beta Lambda function
+          zip prod.zip prod.py  # Zip the production Lambda function
 
-      - name: Upload Lambda Function Code to S3
+      - name: Upload Lambda Function Code to S3  # Step to upload zipped Lambda functions to S3
         run: |
           # Upload the zip files to the S3 bucket
           aws s3 cp lambda/beta.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/beta.zip
           aws s3 cp lambda/prod.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/prod.zip
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+        env:  # Define environment variables needed for the AWS CLI command
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS Access Key ID for authentication
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS Secret Access Key for authentication
+          AWS_REGION: ${{ secrets.AWS_REGION }}  # AWS Region where the S3 bucket is located
 
-      - name: Deploy CloudFormation Stack
-        id: deploy_stack
+      - name: Deploy CloudFormation Stack  # Step to deploy the CloudFormation stack
+        id: deploy_stack  # Assign an ID to this step for later reference
         run: |
-          # Deploy the CloudFormation stack
+          # Deploy the CloudFormation stack using the specified template and parameters
           aws cloudformation deploy \
-            --template-file cloudformation/template.yaml \
-            --stack-name AcmeLabsImageAnalyzerStack \
-            --parameter-overrides \
+            --template-file cloudformation/template.yaml \  # Path to the CloudFormation template
+            --stack-name AcmeLabsImageAnalyzerStack \  # Name of the CloudFormation stack
+            --parameter-overrides \  # Parameters to pass to the CloudFormation template
               AccountId=${{ secrets.AWS_ACCOUNT_ID }} \
               S3LambdaBucket=${{ secrets.S3LAMBDABUCKET }} \
               S3ImageAnalyzerBucket=${{ secrets.S3IMAGEANALYZERBUCKET }} \
               BetaDynamoDBTableName=${{ secrets.BETADYNAMODBTABLENAME }} \
               ProdDynamoDBTableName=${{ secrets.PRODDYNAMODBTABLENAME }} \
-            --capabilities CAPABILITY_NAMED_IAM
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+            --capabilities CAPABILITY_NAMED_IAM  # Specify IAM capabilities
+        env:  # Define environment variables needed for the AWS CLI command
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS Access Key ID for authentication
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS Secret Access Key for authentication
+          AWS_REGION: ${{ secrets.AWS_REGION }}  # AWS Region where the CloudFormation stack will be deployed
 
-      -  name: Log Lambda ARNs
-         run: |
-           echo "Beta Lambda ARN: arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.BETALAMBDAFUNCTIONNAME }}"
-           echo "Prod Lambda ARN: arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.PRODLAMBDAFUNCTIONNAME }}"
+      - name: Log Lambda ARNs  # Step to log the ARNs of the deployed Lambda functions
+        run: |
+          # Output the ARNs for the beta and production Lambda functions
+          echo "Beta Lambda ARN: arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.BETALAMBDAFUNCTIONNAME }}"
+          echo "Prod Lambda ARN: arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.PRODLAMBDAFUNCTIONNAME }}"
 
-      - name: Update S3 Bucket Notification Configuration
-        if: steps.deploy_stack.outcome == 'success'
+      - name: Update S3 Bucket Notification Configuration  # Step to update S3 bucket notifications
+        if: steps.deploy_stack.outcome == 'success'  # Only run if the previous step succeeded
         run: |
           # Update the S3 bucket notification configuration to trigger Lambda functions
           aws s3api put-bucket-notification-configuration \
-            --bucket ${{ secrets.S3IMAGEANALYZERBUCKET }} \
+            --bucket ${{ secrets.S3IMAGEANALYZERBUCKET }} \  # Specify the target S3 bucket
             --notification-configuration '{
               "LambdaFunctionConfigurations": [
                 {
                   "LambdaFunctionArn": "arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.BETALAMBDAFUNCTIONNAME }}",
-                  "Events": ["s3:ObjectCreated:*"],
+                  "Events": ["s3:ObjectCreated:*"],  # Trigger on object creation events
                   "Filter": {
                     "Key": {
                       "FilterRules": [
                         {
-                          "Name": "prefix",
-                          "Value": "rekognition-input/beta/"
+                          "Name": "prefix",  # Define the prefix for the filter
+                          "Value": "rekognition-input/beta/"  # Only trigger for beta images
                         }
                       ]
                     }
@@ -87,13 +89,13 @@ jobs:
                 },
                 {
                   "LambdaFunctionArn": "arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.PRODLAMBDAFUNCTIONNAME }}",
-                  "Events": ["s3:ObjectCreated:*"],
+                  "Events": ["s3:ObjectCreated:*"],  # Trigger on object creation events
                   "Filter": {
                     "Key": {
                       "FilterRules": [
                         {
-                          "Name": "prefix",
-                          "Value": "rekognition-input/prod/"
+                          "Name": "prefix",  # Define the prefix for the filter
+                          "Value": "rekognition-input/prod/"  # Only trigger for production images
                         }
                       ]
                     }
@@ -101,18 +103,18 @@ jobs:
                 }
               ]
             }'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+        env:  # Define environment variables needed for the AWS CLI command
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS Access Key ID for authentication
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS Secret Access Key for authentication
+          AWS_REGION: ${{ secrets.AWS_REGION }}  # AWS Region where the S3 bucket is located
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}  # AWS Account ID for constructing ARNs
 
-      - name: Upload Images to S3
-        if: steps.deploy_stack.outcome == 'success'  # Only run this if the stack was deployed successfully
+      - name: Upload Images to S3  # Step to upload images to the S3 bucket
+        if: steps.deploy_stack.outcome == 'success'  # Only run if the previous step succeeded
         run: |
           # Upload images to the S3 bucket for processing
           aws s3 cp images/ s3://${{ secrets.S3IMAGEANALYZERBUCKET }}/rekognition-input/prod/ --recursive
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+        env:  # Define environment variables needed for the AWS CLI command
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}  # AWS Access Key ID for authentication
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}  # AWS Secret Access Key for authentication
+          AWS_REGION: ${{ secrets.AWS_REGION }}  # AWS Region where the S3 bucket is located
