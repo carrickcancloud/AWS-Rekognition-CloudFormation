@@ -30,9 +30,10 @@ Languages Used:
 2. [👤 Create IAM User with Programmatic Access](#-create-iam-user-with-programmatic-access)
 3. [🔑 Create IAM Policy for GitHub Actions CI/CD](#-create-iam-policy-for-github-actions-cicd)
 4. [🔐 Configure GitHub Secrets](#-configure-github-secrets)
-5. [🔧 Modify Configuration Files](#-modify-configuration-files)
-6. [🎉 Trigger the Workflow](#-trigger-the-workflow)
-7. [🏁 Conclusion](#-conclusion)
+5. [🔐 Configure GitHub Secrets](#-configure-github-secrets)
+6. [🔧 Modify Configuration Files](#-modify-configuration-files)
+7. [🎉 Trigger the Workflow](#-trigger-the-workflow)
+8. [🏁 Conclusion](#-conclusion)
 
 ## 🌐 Setup AWS Credentials
 
