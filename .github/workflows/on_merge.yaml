@@ -10,7 +10,7 @@ jobs:
   deploy_and_process:
     runs-on: ubuntu-latest
     env:
-      DEPLOY_RESOURCES: true
+      DEPLOY_RESOURCES: false
 
     steps:
       - name: Checkout
