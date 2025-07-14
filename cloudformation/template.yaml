@@ -1,183 +1,184 @@
-AWSTemplateFormatVersion: '2010-09-09'  # Specify the template version
-Description: AcmeLabs Image Analyzer  # Description of the template
+AWSTemplateFormatVersion: '2010-09-09'
+Description: AcmeLabs Image Analyzer with S3, Lambda, and DynamoDB
 
 Parameters:
-  AccountId:  # Parameter for the AWS Account ID
+
+  AccountId:
     Type: String
     Description: The AWS Account ID where the resources will be created.
 
-  Region:  # Parameter for the AWS Region
+  Region:
     Type: String
-    Default: us-east-1  # Default region
+    Default: us-east-1
     Description: The AWS Region where the resources will be created.
 
-  S3LambdaBucket:  # Parameter for the S3 bucket for Lambda packages
+  S3LambdaBucket:
     Type: String
     Default: acmelabs-lambdas
     Description: The S3 bucket where the Lambda function packages are stored.
 
-  S3ImageAnalyzerBucket:  # Parameter for the S3 bucket for image analysis
+  S3ImageAnalyzerBucket:
     Type: String
     Default: acmelabs-image-analyzer
     Description: The S3 bucket for storing images to be analyzed.
 
-  BetaDynamoDBTableName:  # Parameter for the Beta DynamoDB table name
+  BetaDynamoDBTableName:
     Type: String
     Default: acmelabs_imageanalyzer_beta_results
     Description: The name of the DynamoDB table for Beta results.
 
-  ProdDynamoDBTableName:  # Parameter for the Prod DynamoDB table name
+  ProdDynamoDBTableName:
     Type: String
     Default: acmelabs_imageanalyzer_prod_results
     Description: The name of the DynamoDB table for Prod results.
 
-  BetaLambdaFunctionName:  # Parameter for the Beta Lambda function name
+  BetaLambdaFunctionName:
     Type: String
     Default: acmelabs_imageanalyzer_beta
     Description: The name of the Lambda function for Beta processing.
 
-  ProdLambdaFunctionName:  # Parameter for the Prod Lambda function name
+  ProdLambdaFunctionName:
     Type: String
     Default: acmelabs_imageanalyzer_prod
-    Description: The name of the Lambda function for Prod processing.
+    Description: The name of the Lambda function for Beta processing.
 
 Resources:
   # DynamoDB Table for Beta Results
   AcmeLabsImageAnalyzerBetaResultsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Ref BetaDynamoDBTableName  # Use the parameter for the table name
+      TableName: !Ref BetaDynamoDBTableName
       AttributeDefinitions:
-        - AttributeName: filename  # Define the attribute for the table
-          AttributeType: S  # String type
+        - AttributeName: filename
+          AttributeType: S
       KeySchema:
-        - AttributeName: filename  # Key schema for the table
-          KeyType: HASH  # Partition key
+        - AttributeName: filename
+          KeyType: HASH
       ProvisionedThroughput:
-        ReadCapacityUnits: 1  # Read capacity units
-        WriteCapacityUnits: 1  # Write capacity units
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
 
   # DynamoDB Table for Prod Results
   AcmeLabsImageAnalyzerProdResultsTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Ref ProdDynamoDBTableName  # Use the parameter for the table name
+      TableName: !Ref ProdDynamoDBTableName
       AttributeDefinitions:
-        - AttributeName: filename  # Define the attribute for the table
-          AttributeType: S  # String type
+        - AttributeName: filename
+          AttributeType: S
       KeySchema:
-        - AttributeName: filename  # Key schema for the table
-          KeyType: HASH  # Partition key
+        - AttributeName: filename
+          KeyType: HASH
       ProvisionedThroughput:
-        ReadCapacityUnits: 1  # Read capacity units
-        WriteCapacityUnits: 1  # Write capacity units
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
 
   # IAM Role for Lambda Functions
   AcmeLabsImageAnalyzerLambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: AcmeLabsImageAnalyzerLambdaExecutionRole  # Name of the IAM role
+      RoleName: AcmeLabsImageAnalyzerLambdaExecutionRole
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'  # Version of the policy document
+        Version: '2012-10-17'
         Statement:
-          - Effect: Allow  # Allow this role to be assumed
+          - Effect: Allow
             Principal:
-              Service: lambda.amazonaws.com  # Service that can assume this role
-            Action: sts:AssumeRole  # Action to assume the role
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
       Policies:
-        - PolicyName: AcmeLabsImageAnalyzerLambdaPolicy  # Name of the policy
+        - PolicyName: AcmeLabsImageAnalyzerLambdaPolicy
           PolicyDocument:
-            Version: '2012-10-17'  # Version of the policy document
+            Version: '2012-10-17'
             Statement:
-              - Effect: Allow  # Allow specified actions
+              - Effect: Allow
                 Action:
-                  - dynamodb:PutItem  # Allow putting items in DynamoDB
-                  - lambda:InvokeFunction  # Allow invoking Lambda functions
-                  - logs:CreateLogGroup  # Allow creating CloudWatch log groups
-                  - logs:CreateLogStream  # Allow creating log streams
-                  - logs:PutLogEvents  # Allow putting log events
-                  - s3:GetObject  # Allow getting objects from S3
+                  - dynamodb:PutItem
+                  - lambda:InvokeFunction
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - s3:GetObject
                 Resource:
-                  - !Sub "arn:aws:s3:::${S3ImageAnalyzerBucket}/*"  # S3 bucket ARN
-                  - !Sub "arn:aws:lambda:${Region}:${AccountId}:function:${BetaLambdaFunctionName}"  # ARN for Beta Lambda function
-                  - !Sub "arn:aws:lambda:${Region}:${AccountId}:function:${ProdLambdaFunctionName}"  # ARN for Prod Lambda function
-                  - !Sub "arn:aws:dynamodb:*:*:table/${BetaDynamoDBTableName}"  # ARN for Beta DynamoDB table
-                  - !Sub "arn:aws:dynamodb:*:*:table/${ProdDynamoDBTableName}"  # ARN for Prod DynamoDB table
-                  - !Sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${BetaLambdaFunctionName}"  # ARN for Beta Lambda logs
-                  - !Sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${ProdLambdaFunctionName}"  # ARN for Prod Lambda logs
+                  - !Sub "arn:aws:s3:::${S3ImageAnalyzerBucket}/*"
+                  - !Sub "arn:aws:lambda:${Region}:${AccountId}:function:${BetaLambdaFunctionName}"
+                  - !Sub "arn:aws:lambda:${Region}:${AccountId}:function:${ProdLambdaFunctionName}"
+                  - !Sub "arn:aws:dynamodb:*:*:table/${BetaDynamoDBTableName}"
+                  - !Sub "arn:aws:dynamodb:*:*:table/${ProdDynamoDBTableName}"
+                  - !Sub "arn:aws:logs:${Region}:${AccountId}:log-group:/aws/lambda/${BetaLambdaFunctionName}"
+                  - !Sub "arn:aws:logs:us-east-1:047719623795:log-group:/aws/lambda/*"
 
   # IAM Policy for Rekognition DetectLabels
   RekognitionDetectLabelsPolicy:
     Type: AWS::IAM::Policy
     Properties:
-      PolicyName: RekognitionDetectLabelsPolicy  # Name of the policy
+      PolicyName: RekognitionDetectLabelsPolicy
       PolicyDocument:
-        Version: '2012-10-17'  # Version of the policy document
+        Version: '2012-10-17'
         Statement:
-          - Effect: Allow  # Allow specified actions
+          - Effect: Allow
             Action:
-              - rekognition:DetectLabels  # Allow using Rekognition DetectLabels
-            Resource: '*'  # Allow access to all resources
+              - rekognition:DetectLabels
+            Resource: '*'
       Roles:
-        - AcmeLabsImageAnalyzerLambdaExecutionRole  # Attach policy to the Lambda execution role
+        - AcmeLabsImageAnalyzerLambdaExecutionRole
     DependsOn:
-      - AcmeLabsImageAnalyzerLambdaExecutionRole  # Ensure the role is created before the policy
+      - AcmeLabsImageAnalyzerLambdaExecutionRole
 
   # Lambda Function for Beta Processing
   AcmeLabsImageAnalyzerLambdaFunctionBeta:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Ref BetaLambdaFunctionName  # Name of the Lambda function
-      Handler: beta.lambda_handler  # Handler for the Lambda function
-      Role: !GetAtt AcmeLabsImageAnalyzerLambdaExecutionRole.Arn  # Role for the Lambda function
+      FunctionName: !Ref BetaLambdaFunctionName
+      Handler: beta.lambda_handler
+      Role: !GetAtt AcmeLabsImageAnalyzerLambdaExecutionRole.Arn
       Code:
-        S3Bucket: !Ref S3LambdaBucket  # S3 bucket for the Lambda code
-        S3Key: acmelabs-imageanalyzer/beta.zip  # S3 key for the Lambda code
-      Runtime: python3.13  # Runtime for the Lambda function
-      Timeout: 30  # Timeout for the Lambda function in seconds
+        S3Bucket: !Ref S3LambdaBucket
+        S3Key: acmelabs-imageanalyzer/beta.zip
+      Runtime: python3.13
+      Timeout: 30
       Environment:
         Variables:
-          DYNAMODB_TABLE_NAME: !Ref BetaDynamoDBTableName  # Environment variable for the DynamoDB table name
+          DYNAMODB_TABLE_NAME: !Ref BetaDynamoDBTableName
 
   # Lambda Function for Prod Processing
   AcmeLabsImageAnalyzerLambdaFunctionProd:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Ref ProdLambdaFunctionName  # Name of the Lambda function
-      Handler: prod.lambda_handler  # Handler for the Lambda function
-      Role: !GetAtt AcmeLabsImageAnalyzerLambdaExecutionRole.Arn  # Role for the Lambda function
+      FunctionName: !Ref ProdLambdaFunctionName
+      Handler: prod.lambda_handler
+      Role: !GetAtt AcmeLabsImageAnalyzerLambdaExecutionRole.Arn
       Code:
-        S3Bucket: !Ref S3LambdaBucket  # S3 bucket for the Lambda code
-        S3Key: acmelabs-imageanalyzer/prod.zip  # S3 key for the Lambda code
-      Runtime: python3.13  # Runtime for the Lambda function
-      Timeout: 30  # Timeout for the Lambda function in seconds
+        S3Bucket: !Ref S3LambdaBucket
+        S3Key: acmelabs-imageanalyzer/prod.zip
+      Runtime: python3.13
+      Timeout: 30
       Environment:
         Variables:
-          DYNAMODB_TABLE_NAME: !Ref ProdDynamoDBTableName  # Environment variable for the DynamoDB table name
+          DYNAMODB_TABLE_NAME: !Ref ProdDynamoDBTableName
 
   # S3 Bucket for storing images
   AcmeLabsImageAnalyzerS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Ref S3ImageAnalyzerBucket  # Name of the S3 bucket
+      BucketName: !Ref S3ImageAnalyzerBucket
 
 Outputs:
   S3ImageAnalyzerBucketName:
-    Description: "S3 Bucket Name for Image Analysis"  # Description of the output
-    Value: !Ref S3ImageAnalyzerBucket  # Value of the S3 bucket name
+    Description: "S3 Bucket Name for Image Analysis"
+    Value: !Ref S3ImageAnalyzerBucket
 
   BetaDynamoDBTableName:
-    Description: "Beta DynamoDB Table Name"  # Description of the output
-    Value: !Ref AcmeLabsImageAnalyzerBetaResultsTable  # Value of the Beta DynamoDB table name
+    Description: "Beta DynamoDB Table Name"
+    Value: !Ref AcmeLabsImageAnalyzerBetaResultsTable
 
   ProdDynamoDBTableName:
-    Description: "Prod DynamoDB Table Name"  # Description of the output
-    Value: !Ref AcmeLabsImageAnalyzerProdResultsTable  # Value of the Prod DynamoDB table name
+    Description: "Prod DynamoDB Table Name"
+    Value: !Ref AcmeLabsImageAnalyzerProdResultsTable
 
   LambdaFunctionBetaArn:
-    Description: "ARN of the Beta Lambda Function"  # Description of the output
-    Value: !GetAtt AcmeLabsImageAnalyzerLambdaFunctionBeta.Arn  # ARN of the Beta Lambda function
+    Description: "ARN of the Beta Lambda Function"
+    Value: !GetAtt AcmeLabsImageAnalyzerLambdaFunctionBeta.Arn
 
   LambdaFunctionProdArn:
-    Description: "ARN of the Prod Lambda Function"  # Description of the output
-    Value: !GetAtt AcmeLabsImageAnalyzerLambdaFunctionProd.Arn  # ARN of the Prod Lambda function
+    Description: "ARN of the Prod Lambda Function"
+    Value: !GetAtt AcmeLabsImageAnalyzerLambdaFunctionProd.Arn
