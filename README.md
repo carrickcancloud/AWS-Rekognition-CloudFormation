@@ -29,11 +29,11 @@ Languages:
 1. [🌐 Setup AWS Credentials](#-setup-aws-credentials)
 2. [👤 Create IAM User](#-create-iam-user)
 3. [🔑 Create Access Keys](#-create-access-keys)
-4. [⚙️ Create IAM Policy for GitHub Actions CI/CD](#-create-iam-policy-for-github-actions-cicd)
+4. [⚙️ Create IAM Policy for GitHub Actions CI/CD](#-create-iam-policy-for-github-actions-wofkflows)
 5. [🔐 Configure GitHub Secrets](#-configure-github-secrets)
 6. [🔧 Modify Configuration Files](#-modify-configuration-files)
 7. [📦 GitHub Repository Structure](#-github-repository-structure)
-8. [🎉 Trigger the Workflow](#-trigger-the-workflow)
+8. [🔄 Trigger the Workflow](#-trigger-the-workflows)
 9. [🏁 Conclusion](#-conclusion)
 
 ## 🌐 Setup AWS Credentials
@@ -66,7 +66,7 @@ To set up AWS credentials follow these steps:
 7. Click "Done" to finish. 🎉
 
 
-## ⚙️ Create IAM Policy for GitHub Actions CI/CD
+## ⚙️ Create IAM Policy for GitHub Actions Wofkflows
 1. Create the `acmelabs_image_analyzer_github_actions_cicd_policy` Policy:
 - In the IAM console, go to "Policies" and click "Create policy".
 - Switch to the "JSON" tab and paste the following policy:
@@ -128,10 +128,10 @@ To set up AWS credentials follow these steps:
                 "iam:UntagRole"
             ],
             "Resource": [
-                "arn:aws:lambda:us-east-1:047719623795:function:acmelabs_imageanalyzer_beta",
-                "arn:aws:lambda:us-east-1:047719623795:function:acmelabs_imageanalyzer_prod",
-                "arn:aws:dynamodb:us-east-1:047719623795:table/acmelabs_imageanalyzer_beta_results",
-                "arn:aws:dynamodb:us-east-1:047719623795:table/acmelabs_imageanalyzer_prod_results",
+                "arn:aws:lambda:us-east-1:047719623795:function:acmelabs_image_analyzer_beta",
+                "arn:aws:lambda:us-east-1:047719623795:function:acmelabs_image_analyzer_prod",
+                "arn:aws:dynamodb:us-east-1:047719623795:table/acmelabs_image_analyzer_beta_results",
+                "arn:aws:dynamodb:us-east-1:047719623795:table/acmelabs_image_analyzer_prod_results",
                 "arn:aws:s3:::acmelabs-lambdas",
                 "arn:aws:s3:::acmelabs-lambdas/*",
                 "arn:aws:s3:::acmelabs-image-analyzer",
