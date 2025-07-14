@@ -58,49 +58,49 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
-      - name: Update S3 Bucket Notification Configuration
-        if: steps.deploy_stack.outcome == 'success'
-        run: |
-          # Update the S3 bucket notification configuration to trigger Lambda functions
-          aws s3api put-bucket-notification-configuration \
-            --bucket ${{ secrets.S3IMAGEANALYZERBUCKET }} \
-            --notification-configuration '{
-              "LambdaFunctionConfigurations": [
-                {
-                  "LambdaFunctionArn": "arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.BETALAMBDAFUNCTIONNAME }}",
-                  "Events": ["s3:ObjectCreated:*"],
-                  "Filter": {
-                    "Key": {
-                      "FilterRules": [
-                        {
-                          "Name": "prefix",
-                          "Value": "rekognition-input/beta/"
-                        }
-                      ]
-                    }
-                  }
-                },
-                {
-                  "LambdaFunctionArn": "arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.PRODLAMBDAFUNCTIONNAME }}",
-                  "Events": ["s3:ObjectCreated:*"],
-                  "Filter": {
-                    "Key": {
-                      "FilterRules": [
-                        {
-                          "Name": "prefix",
-                          "Value": "rekognition-input/prod/"
-                        }
-                      ]
-                    }
-                  }
-                }
-              ]
-            }'
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+#      - name: Update S3 Bucket Notification Configuration
+#        if: steps.deploy_stack.outcome == 'success'
+#        run: |
+#          # Update the S3 bucket notification configuration to trigger Lambda functions
+#          aws s3api put-bucket-notification-configuration \
+#            --bucket ${{ secrets.S3IMAGEANALYZERBUCKET }} \
+#            --notification-configuration '{
+#              "LambdaFunctionConfigurations": [
+#                {
+#                  "LambdaFunctionArn": "arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.BETALAMBDAFUNCTIONNAME }}",
+#                  "Events": ["s3:ObjectCreated:*"],
+#                  "Filter": {
+#                    "Key": {
+#                      "FilterRules": [
+#                        {
+#                          "Name": "prefix",
+#                          "Value": "rekognition-input/beta/"
+#                        }
+#                      ]
+#                    }
+#                  }
+#                },
+#                {
+#                  "LambdaFunctionArn": "arn:aws:lambda:${{ secrets.AWS_REGION }}:${{ secrets.AWS_ACCOUNT_ID }}:function:${{ secrets.PRODLAMBDAFUNCTIONNAME }}",
+#                  "Events": ["s3:ObjectCreated:*"],
+#                  "Filter": {
+#                    "Key": {
+#                      "FilterRules": [
+#                        {
+#                          "Name": "prefix",
+#                          "Value": "rekognition-input/prod/"
+#                        }
+#                      ]
+#                    }
+#                  }
+#                }
+#              ]
+#            }'
+#        env:
+#          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#          AWS_REGION: ${{ secrets.AWS_REGION }}
+#          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
       - name: Upload Images to S3
         if: steps.deploy_stack.outcome == 'success'
