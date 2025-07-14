@@ -4,7 +4,7 @@ Welcome to the AcmeLabs Image Analyzer project!
 
 This project leverages GitHub Actions with AWS services to analyze images & labels them using AWS Rekognition saving the results to DynamoDB. Below are the steps to set up your environment and deploy the resources.
 
-AWS Services Used:
+AWS Services:
 - AWS CloudFormation
 - AWS CloudWatch
 - AWS DynamoDB
@@ -20,20 +20,21 @@ GitHub Services:
 - GitHub Secrets
 - GitHub Workflows
 
-Languages Used:
+Languages:
 - Bash (Inline Shell Scripts)
 - YAML
 - Python
 
 ## Table of Contents
 1. [🌐 Setup AWS Credentials](#-setup-aws-credentials)
-2. [👤 Create IAM User with Programmatic Access](#-create-iam-user-with-programmatic-access)
-3. [🔑 Create IAM Policy for GitHub Actions CI/CD](#-create-iam-policy-for-github-actions-cicd)
-4. [🔐 Configure GitHub Secrets](#-configure-github-secrets)
+2. [👤 Create IAM User](#-create-iam-user)
+3. [🔑 Create Access Keys](#-create-access-keys)
+4. [⚙️ Create IAM Policy for GitHub Actions CI/CD](#-create-iam-policy-for-github-actions-cicd)
 5. [🔐 Configure GitHub Secrets](#-configure-github-secrets)
 6. [🔧 Modify Configuration Files](#-modify-configuration-files)
-7. [🎉 Trigger the Workflow](#-trigger-the-workflow)
-8. [🏁 Conclusion](#-conclusion)
+7. [📦 GitHub Repository Structure](#-github-repository-structure)
+8. [🎉 Trigger the Workflow](#-trigger-the-workflow)
+9. [🏁 Conclusion](#-conclusion)
 
 ## 🌐 Setup AWS Credentials
 
@@ -237,7 +238,7 @@ To set up AWS credentials follow these steps:
      Description: The name of the Lambda function for Prod processing.
 ``` 
 
-## GitHub Repository Structure
+## 📦 GitHub Repository Structure
 ```angular2html
 ├── .github
 │   ├── pull_request_template.md
