@@ -14,8 +14,15 @@ jobs:
 
       - name: Upload Images to S3
         run: |
-          # Upload images to the S3 bucket for processing
-          aws s3 cp images/ s3://${{ secrets.S3IMAGEANALYZERBUCKET }}/rekognition-input/beta/ --recursive
+          echo "Starting upload of images to S3..."
+          # Check if the images directory exists and contains supported image files
+          if [ -d images ] && [ "$(find images -type f \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.gif' -o -name '*.bmp' -o -name '*.tiff' -o -name '*.tif' -o -name '*.webp' \))" ]; then
+            upload_output=$(aws s3 cp images/ s3://${{ secrets.S3IMAGEANALYZERBUCKET }}/rekognition-input/beta/ --recursive)
+            echo "Upload output: $upload_output"
+            echo "Images uploaded successfully."
+          else
+            echo "No supported images found in the directory. Skipping upload."
+          fi
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
