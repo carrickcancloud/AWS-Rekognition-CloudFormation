@@ -23,22 +23,22 @@ Parameters:
 
   BetaDynamoDBTableName:
     Type: String
-    Default: acmelabs_imageanalyzer_beta_results
+    Default: acmelabs_image_analyzer_beta_results
     Description: The name of the DynamoDB table for Beta results.
 
   ProdDynamoDBTableName:
     Type: String
-    Default: acmelabs_imageanalyzer_prod_results
+    Default: acmelabs_image_analyzer_prod_results
     Description: The name of the DynamoDB table for Prod results.
 
   BetaLambdaFunctionName:
     Type: String
-    Default: acmelabs_imageanalyzer_beta
+    Default: acmelabs_image_analyzer_beta
     Description: The name of the Lambda function for Beta processing.
 
   ProdLambdaFunctionName:
     Type: String
-    Default: acmelabs_imageanalyzer_prod
+    Default: acmelabs_image_analyzer_prod
     Description: The name of the Lambda function for Beta processing.
 
 Resources:
