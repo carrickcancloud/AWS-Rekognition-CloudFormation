@@ -28,7 +28,7 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     # Initialize AWS clients
     rekognition = boto3.client('rekognition')
     dynamodb = boto3.resource('dynamodb')
-    table_name = os.environ.get('DYNAMODB_TABLE_BETA', 'UnknownTable')
+    table_name = os.environ.get('DYNAMODB_TABLE_NAME', 'CheckYourLambdaEnvVarNameAndValue')
     logger.info(f"Using DynamoDB table: {table_name}")
     table = dynamodb.Table(table_name)
 
