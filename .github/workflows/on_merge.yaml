@@ -9,11 +9,15 @@ on:
 jobs:
   deploy_and_process:
     runs-on: ubuntu-latest
+    env:
+      DEPLOY_RESOURCES: false
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
       - name: Create S3 Bucket For Lambda Functions
+        if: env.DEPLOY_RESOURCES == 'true'
         run: |
           echo "Starting S3 bucket creation..."
           create_output=$(aws s3 mb s3://${{ secrets.S3LAMBDABUCKET }} --region ${{ secrets.AWS_REGION }})
@@ -25,6 +29,7 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Package Lambda Functions
+        if: env.DEPLOY_RESOURCES == 'true'
         run: |
           echo "Packaging Lambda functions..."
           cd lambda
@@ -33,6 +38,7 @@ jobs:
           echo "Lambda functions packaged successfully."
 
       - name: Upload Lambda Function Code to S3
+        if: env.DEPLOY_RESOURCES == 'true'
         run: |
           echo "Uploading Lambda function code to S3..."
           upload_beta_output=$(aws s3 cp lambda/beta.zip s3://${{ secrets.S3LAMBDABUCKET }}/acmelabs-imageanalyzer/beta.zip)
@@ -46,6 +52,7 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Deploy CloudFormation Stack
+        if: env.DEPLOY_RESOURCES == 'true'
         id: deploy_stack
         run: |
           echo "Starting CloudFormation stack deployment..."
@@ -67,7 +74,7 @@ jobs:
           AWS_REGION: ${{ secrets.AWS_REGION }}
 
       - name: Update S3 Bucket Notification Configuration
-        if: steps.deploy_stack.outcome == 'success'
+        if: steps.deploy_stack.outcome == 'success' && env.DEPLOY_RESOURCES == 'true'
         run: |
           echo "Updating S3 bucket notification configuration to trigger Lambda functions..."
           notification_output=$(aws s3api put-bucket-notification-configuration \
@@ -113,7 +120,7 @@ jobs:
           AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
       - name: Upload Images to S3
-        if: steps.deploy_stack.outcome == 'success'
+        if: env.DEPLOY_RESOURCES == 'false'
         run: |
           echo "Checking for images to upload..."
           if [ -d images ] && [ "$(find images -type f \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.png' -o -name '*.gif' -o -name '*.bmp' -o -name '*.tiff' -o -name '*.tif' -o -name '*.webp' \))" ]; then
