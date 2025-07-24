@@ -128,16 +128,16 @@ To set up AWS credentials follow these steps:
                 "iam:UntagRole"
             ],
             "Resource": [
-                "arn:aws:lambda:us-east-1:047719623795:function:acmelabs_image_analyzer_beta",
-                "arn:aws:lambda:us-east-1:047719623795:function:acmelabs_image_analyzer_prod",
-                "arn:aws:dynamodb:us-east-1:047719623795:table/acmelabs_image_analyzer_beta_results",
-                "arn:aws:dynamodb:us-east-1:047719623795:table/acmelabs_image_analyzer_prod_results",
+                "arn:aws:lambda:us-east-1:<AWSAccountId>:function:acmelabs_image_analyzer_beta",
+                "arn:aws:lambda:us-east-1:<AWSAccountId>:function:acmelabs_image_analyzer_prod",
+                "arn:aws:dynamodb:us-east-1:<AWSAccountId>:table/acmelabs_image_analyzer_beta_results",
+                "arn:aws:dynamodb:us-east-1:<AWSAccountId>:table/acmelabs_image_analyzer_prod_results",
                 "arn:aws:s3:::acmelabs-lambdas",
                 "arn:aws:s3:::acmelabs-lambdas/*",
                 "arn:aws:s3:::acmelabs-image-analyzer",
                 "arn:aws:s3:::acmelabs-image-analyzer/*",
-                "arn:aws:cloudformation:us-east-1:047719623795:stack/AcmeLabsImageAnalyzerStack/*",
-                "arn:aws:iam::047719623795:role/AcmeLabsImageAnalyzerLambdaExecutionRole"
+                "arn:aws:cloudformation:us-east-1:<AWSAccountId>:stack/AcmeLabsImageAnalyzerStack/*",
+                "arn:aws:iam::<AWSAccountId>5:role/AcmeLabsImageAnalyzerLambdaExecutionRole"
             ]
         }
     ]
